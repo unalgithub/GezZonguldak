@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -8,7 +9,8 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+
+import axiosInstance from "../axiosInstance";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -19,12 +21,14 @@ const HomeScreen = () => {
 
     async function getAllPlaces() {
       try {
-        const _response = await fetch(
-          "http://192.168.1.106:3000/api/places/allPlaces"
-        );
-        const data = await _response.json();
-        console.log("homescreen places data : ", data);
-        setPlaces(data);
+        const _response = await axiosInstance
+          .get("/places/allPlaces")
+          .then((res) => {
+            return res.data;
+          });
+
+        console.log("homescreen places _response : ", _response);
+        setPlaces(_response);
       } catch (error) {
         console.log("error in homescreen places get all : ", error);
       }
