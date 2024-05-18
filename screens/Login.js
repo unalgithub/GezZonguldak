@@ -47,7 +47,7 @@ const Login = ({ navigation }) => {
         await AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
 
         //navigate to homescreen
-        //navigation.navigate("Main");
+        navigation.navigate("Home");
       }
     } catch (error) {
       console.log("error in login screen : ", error);

@@ -6,6 +6,8 @@ import Button from "../components/Button";
 import Signup from "../screens/Signup";
 import login from "../screens/Login";
 
+import * as RootNavigation from "../RootNavigation";
+
 const Welcome = ({ navigation }) => {
   return (
     <LinearGradient
@@ -137,7 +139,7 @@ const Welcome = ({ navigation }) => {
 
           <Button
             title="Şimdi Gezmeye Başla"
-            onPress={() => navigation.navigate("Signup")}
+            onPress={() => RootNavigation.navigate("Signup")}
             style={{
               marginTop: 22,
               width: "100%",
@@ -159,7 +161,7 @@ const Welcome = ({ navigation }) => {
             >
               Zaten Hesabım Var{" "}
             </Text>
-            <Pressable onPress={() => navigation.navigate("Login")}>
+            <Pressable onPress={() => RootNavigation.navigate("Login")}>
               <Text
                 style={{
                   fontSize: 16,
@@ -172,7 +174,7 @@ const Welcome = ({ navigation }) => {
               </Text>
             </Pressable>
           </View>
-          <Pressable onPress={() => navigation.navigate("Main")}>
+          <Pressable onPress={() => RootNavigation.navigate("Home")}>
             <Text
               style={{
                 fontSize: 16,

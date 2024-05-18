@@ -398,7 +398,7 @@ const mapStyle = [
   },
 ];
 
-const Map = ({ route }) => {
+const MapTab = ({ route }) => {
   const mapRef = useRef(null);
   const initialRegion = {
     latitude: 41.4565,
@@ -433,4 +433,4 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height,
   },
 });
-export default Map;
+export default MapTab;

@@ -1,9 +1,11 @@
 import { View, Text } from "react-native";
 import React from "react";
-import Button from "../components/Button";
+import Button from "../../components/Button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function Profile({ navigation }) {
+import * as RootNavigation from "../../RootNavigation";
+
+export default function ProfileTab({ navigation }) {
   return (
     <View
       style={{
@@ -18,7 +20,7 @@ export default function Profile({ navigation }) {
         title="Çıkış Yap"
         onPress={async () => {
           await AsyncStorage.removeItem("userInfo");
-          navigation.navigate("Main");
+          navigation.navigate("Welcome");
         }}
         filled
         style={{
