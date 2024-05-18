@@ -6,16 +6,53 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import COLORS from "../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox";
 import Button from "../components/Button";
+import axiosInstance from "../axiosInstance";
 
 const Login = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [email, SetEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  async function userLogin() {
+    try {
+      const _response = await axiosInstance
+        .post("/users/login", {
+          email,
+          password,
+        })
+        .then(function (response) {
+          return response.data;
+        })
+        .catch(function (error) {
+          console.log("err ", error);
+        });
+      //console.log("login users _response : ", _response);
+
+      if (_response) {
+        const userInfo = {
+          email: _response.email,
+          password: _response.password,
+        };
+
+        await AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
+
+        //navigate to homescreen
+        //navigation.navigate("Main");
+      }
+    } catch (error) {
+      console.log("error in login screen : ", error);
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
@@ -60,6 +97,7 @@ const Login = ({ navigation }) => {
               placeholder="Email giriniz"
               placeholderTextColor={COLORS.black}
               keyboardType="email-address"
+              onChangeText={(newText) => SetEmail(newText)}
               style={{
                 width: "100%",
               }}
@@ -94,6 +132,7 @@ const Login = ({ navigation }) => {
               placeholder="Şifrenizi Giriniz"
               placeholderTextColor={COLORS.black}
               secureTextEntry={isPasswordShown}
+              onChangeText={(newText) => setPassword(newText)}
               style={{
                 width: "100%",
               }}
@@ -133,6 +172,9 @@ const Login = ({ navigation }) => {
 
         <Button
           title="Giriş Yap"
+          onPress={async () => {
+            await userLogin();
+          }}
           filled
           style={{
             marginTop: 18,

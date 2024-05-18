@@ -9,7 +9,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosInstance from "../axiosInstance";
 
 const HomeScreen = () => {
@@ -20,6 +20,7 @@ const HomeScreen = () => {
     getAllPlaces();
 
     async function getAllPlaces() {
+
       try {
         const _response = await axiosInstance
           .get("/places/allPlaces")
@@ -27,7 +28,7 @@ const HomeScreen = () => {
             return res.data;
           });
 
-        console.log("homescreen places _response : ", _response);
+        //console.log("homescreen places _response : ", _response);
         setPlaces(_response);
       } catch (error) {
         console.log("error in homescreen places get all : ", error);

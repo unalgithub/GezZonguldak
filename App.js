@@ -1,6 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Entypo } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -12,6 +12,7 @@ import Profile from "./screens/Profile";
 import Map from "./screens/Map";
 import DetailScreen from "./screens/DetailScreen"; // Burada DetailScreen'i doğru şekilde içe aktardığınızdan emin olun
 import { View, Text, Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -123,29 +124,43 @@ function MainTabNavigator() {
 }
 
 export default function App() {
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(async () => {
+    const _userInfo = await AsyncStorage.getItem("userInfo");
+    console.log("AsyncStorage _userInfo : ", _userInfo);
+    setUserInfo(_userInfo);
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Welcome">
-        <Stack.Screen
-          name="Welcome"
-          component={Welcome}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Signup"
-          component={Signup}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Main"
-          component={MainTabNavigator}
-          options={{ headerShown: false }}
-        />
+        {userInfo ? (
+          <>
+            <Stack.Screen
+              name="Main"
+              component={MainTabNavigator}
+              options={{ headerShown: false }}
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen
+              name="Welcome"
+              component={Welcome}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Signup"
+              component={Signup}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{ headerShown: false }}
+            />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
