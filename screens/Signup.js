@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,12 +13,49 @@ import COLORS from "../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox";
 import Button from "../components/Button";
+import axiosInstance from "../axiosInstance";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const Signup = ({ navigation }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [email, SetEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
+  async function userSingup() {
+    try {
+      const _response = await axiosInstance
+        .post("/users/register", {
+          email,
+          password,
+          phoneNumber,
+        })
+        .then(function (response) {
+          return response.data;
+        })
+        .catch(function (error) {
+          console.log("err ", error);
+        });
+      console.log("Singup users _response : ", _response);
+
+      if (_response) {
+        const userInfo = {
+          email: _response.email,
+          password: _response.password,
+          phoneNumber: _response.phoneNumber,
+        };
+
+        await AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
+
+        //navigate to homescreen
+        navigation.navigate("Home");
+      }
+    } catch (error) {
+      console.log("error in Singup screen : ", error);
+    }
+  }
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={{ flex: 1, marginHorizontal: 22 }}>
@@ -74,6 +111,7 @@ const Signup = ({ navigation }) => {
               style={{
                 width: "100%",
               }}
+              onChangeText={(newText) => SetEmail(newText)}
             />
           </View>
         </View>
@@ -118,6 +156,7 @@ const Signup = ({ navigation }) => {
               placeholder="Telefon Numaranızı giriniz"
               placeholderTextColor={COLORS.black}
               keyboardType="numeric"
+              onChangeText={(newText) => setPhoneNumber(newText)}
               style={{
                 width: "80%",
               }}
@@ -152,6 +191,7 @@ const Signup = ({ navigation }) => {
               placeholder="Şifrenizi giriniz"
               placeholderTextColor={COLORS.black}
               secureTextEntry={isPasswordShown}
+              onChangeText={(newText) => setPassword(newText)}
               style={{
                 width: "100%",
               }}
@@ -192,6 +232,9 @@ const Signup = ({ navigation }) => {
         <Button
           title="Üye Ol"
           filled
+          onPress={async () => {
+            await userSingup();
+          }}
           style={{
             marginTop: 18,
             marginBottom: 4,
