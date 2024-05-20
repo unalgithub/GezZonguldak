@@ -154,6 +154,11 @@ export default function App() {
               component={MainTabNavigator}
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="Detail"
+              component={DetailScreen}
+              options={{ headerShown: true }}
+            />
           </>
         )}
       </Stack.Navigator>
