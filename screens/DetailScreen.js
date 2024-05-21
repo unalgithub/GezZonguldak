@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Linking,
 } from "react-native";
 
 const DetailScreen = ({ route }) => {
@@ -20,11 +21,11 @@ const DetailScreen = ({ route }) => {
       "Gökgöl Mağarası, Zonguldak'ın doğal güzelliklerinden biri olup, büyüleyici sarkıt ve dikitleriyle ünlüdür. Yaklaşık 3,350 metre uzunluğundaki bu mağara, serin ve nemli havasıyla doğa severlere eşsiz bir yer altı deneyimi sunar. Mağara içindeki yürüyüş parkurları, ziyaretçileri doğal bir sanat galerisi gibi hissettiren görkemli oluşumlarla doludur. Gökgöl Mağarası, doğanın gizemli yüzünü keşfetmek isteyenler için ideal bir destinasyondur.",
     "Harmankaya şelalesi":
       "Harmankaya Şelalesi, Zonguldak'ın doğal güzelliklerinden biri olarak, doğa severlerin gözdesidir. Yemyeşil ormanlarla çevrili olan bu şelale, serin suları ve huzur verici sesiyle ziyaretçilere sakinlik sunar. Şelalenin etrafındaki yürüyüş parkurları, doğa yürüyüşü ve piknik için mükemmel alanlar sağlar.",
-    Filyos:
+    "Filyos":
       "Filyos, tarihi kalıntılar ve güzel bir plaj sunar. Doğal güzellikler ve tarih bir arada, herkes için bir şeyler sunar.",
     "Tios antik kenti":
       "Tios Antik Kenti, Zonguldak'ın tarihi miraslarından biridir ve antik dönemin izlerini günümüze taşır. Bu antik kent, Roma ve Bizans dönemlerine ait kalıntılarıyla dikkat çeker.",
-    "Çakırköy mağrası":
+    "Çakırköy mağarası":
       "Çakırköy Mağarası, Zonguldak'ın doğal güzelliklerinden biridir ve ziyaretçilere eşsiz bir yer altı macerası sunar. Mağara, benzersiz sarkıt ve dikit oluşumlarıyla ünlüdür ve doğa meraklıları için keşfedilmeyi bekleyen bir cennettir.",
     "Ulutan barajı":
       " Ulutan Barajı, Zonguldak'ın önemli su kaynaklarından biridir ve bölgenin doğal güzelliklerini keşfetmek isteyenler için ideal bir yerdir. Baraj gölü, çevresindeki yeşil vadilerle çevrili olup, muhteşem bir doğa manzarası sunar.",
@@ -55,36 +56,70 @@ const DetailScreen = ({ route }) => {
     "https://cdn.pixabay.com/photo/2016/11/29/05/08/rocks-1867416_1280.jpg",
     "https://cdn.pixabay.com/photo/2016/01/19/17/42/sydney-opera-house-1149949_1280.jpg",
   ];
+  const placeCoordinates = {
+    "Zonguldak limanı": { latitude: 41.455712449162085, longitude: 31.786199842580277 },
+    "Zonguldak maden müzesi": { latitude: 41.4475449782086, longitude: 31.8145918249371 },
+    "Gökgöl mağrası": { latitude: 41.44076328395787, longitude: 31.833154139771036 },
+    "Filyos": { latitude: 41.561906743741226, longitude: 32.024309313402924 },
+    "Tios antik kenti": { latitude: 41.573871476167, longitude: 32.03193481279399 },
+    "Çakırköy mağarası": { latitude: 41.45266677764984, longitude: 31.98818438970079 },
+    "ulutan barajı": { latitude: 41.4129454559085, longitude: 31.793449747890175 },
+    "gümeli porsuk ağacı": { latitude: 41.05379472948139, longitude: 31.654335795574134 },
+    "bölüklü yaylası": { latitude: 41.05227232173551, longitude: 31.678859394631534 },
+    "Cehennemağzı mağraları": { latitude: 41.317708629297826, longitude: 31.451722071694032 },
+    "Deniz feneri": { latitude:41.46428421566327, longitude: 31.787217982614084 },
+    "Kapuz plajı": { latitude: 41.47213804942162, longitude: 31.80301024315775 },
+    "Zonguldak kent ormanı": { latitude:41.39646333586999, longitude: 31.84593684165429 },
+    "Bastoncular çarşısı": { latitude: 41.225547043113416, longitude: 31.964600830992776 },
+    "ılıksu plajı": { latitude: 41.40840258466706, longitude:31.68452254157608 },
+    "Varagel tüneli": { latitude: 41.465387392013234, longitude: 31.78834865377808 },
+    "Harmankaya şelalesi": { latitude: 41.42464796014042, longitude:31.818361901962916 },
+    
+    };
+    const openGoogleMaps = (latitude, longitude) => {
+      const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+      Linking.openURL(url);
+    };
 
-  return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      return (
+        <View style={styles.container}>
+        <ScrollView style={styles.scrollView}>
         <Image source={{ uri: place.imageUrl }} style={styles.image} />
         <View style={styles.content}>
-          <Text style={styles.title}>{place.name}</Text>
-          <Text style={styles.description}>{place.description}</Text>
-          <Text style={styles.details}>{placeDescriptions[place.name]}</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.imageGallery}
-          >
-            {images.map((image, index) => (
-              <Image
-                key={index}
-                source={{ uri: image }}
-                style={styles.galleryImage}
-              />
-            ))}
-          </ScrollView>
+        <Text style={styles.title}>{place.name}</Text>
+        <Text style={styles.description}>{place.description}</Text>
+        <Text style={styles.details}>{placeDescriptions[place.name]}</Text>
+        <ScrollView
+                 horizontal
+                 showsHorizontalScrollIndicator={false}
+                 style={styles.imageGallery}
+               >
+        {images.map((image, index) => (
+        <Image
+        key={index}
+        source={{ uri: image }}
+        style={styles.galleryImage}
+        />
+        ))}
+        </ScrollView>
         </View>
-      </ScrollView>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Rotaya Ekle</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
+        </ScrollView>
+        <TouchableOpacity
+  style={styles.button}
+  onPress={() => {
+    const coordinates = placeCoordinates[place.name];
+    if (coordinates) {
+      openGoogleMaps(coordinates.latitude, coordinates.longitude);
+    } else {
+      console.log("Koordinatlar bulunamadı.");
+    }
+  }}
+>
+  <Text style={styles.buttonText}>Git</Text>
+</TouchableOpacity>
+        </View>
+        );
+        };
 
 const styles = StyleSheet.create({
   container: {
