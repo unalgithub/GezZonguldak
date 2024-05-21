@@ -158,7 +158,7 @@ export default function App() {
               name="Detail"
               component={DetailScreen}
               options={{ headerShown: true }}
-            />
+            />       
           </>
         )}
       </Stack.Navigator>
