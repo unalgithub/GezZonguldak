@@ -71,7 +71,7 @@ const DetailScreen = ({ route }) => {
     "Kapuz plajı": { latitude: 41.47213804942162, longitude: 31.80301024315775 },
     "Zonguldak kent ormanı": { latitude:41.39646333586999, longitude: 31.84593684165429 },
     "Bastoncular çarşısı": { latitude: 41.225547043113416, longitude: 31.964600830992776 },
-    "ılıksu plajı": { latitude: 41.40840258466706, longitude:31.68452254157608 },
+    "Ilıksu plajı": { latitude: 41.40840258466706, longitude:31.68452254157608 },
     "Varagel tüneli": { latitude: 41.465387392013234, longitude: 31.78834865377808 },
     "Harmankaya şelalesi": { latitude: 41.42464796014042, longitude:31.818361901962916 },
     
