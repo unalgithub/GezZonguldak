@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import axiosInstance from "../../axiosInstance";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const PlacesTab = () => {
   const navigation = useNavigation();
@@ -22,17 +23,30 @@ const PlacesTab = () => {
       try {
         const _response = await axiosInstance
           .get("/places/allPlaces")
-          .then((res) => {
-            return res.data;
-          });
+          .then((res) => res.data);
 
-        //console.log("PlacesTab places _response : ", _response);
         setPlaces(_response);
       } catch (error) {
         console.log("error in PlacesTab places get all : ", error);
       }
     }
   }, []);
+
+  const addToFavorites = async (place) => {
+    try {
+      const favorites = await AsyncStorage.getItem("favorites");
+      const favoritesArray = favorites ? JSON.parse(favorites) : [];
+      const isAlreadyFavorite = favoritesArray.some((fav) => fav._id === place._id);
+
+      if (!isAlreadyFavorite) {
+        favoritesArray.push(place);
+        await AsyncStorage.setItem("favorites", JSON.stringify(favoritesArray));
+        navigation.navigate("Profile");
+      }
+    } catch (error) {
+      console.log("Error adding to favorites: ", error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -41,18 +55,24 @@ const PlacesTab = () => {
           Zonguldak'taki Harika Yerleri Keşfedin
         </Text>
       </View>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         {places?.length > 0 &&
           places?.map((place, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.card}
-              onPress={() => navigation.navigate("Detail", { place })}
-            >
-              <Image source={{ uri: place.imageUrl }} style={styles.image} />
-              <Text style={styles.title}>{place.name}</Text>
-              <Text style={styles.description}>{place.description}</Text>
-            </TouchableOpacity>
+            <View key={index} style={styles.card}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Detail", { place })}
+              >
+                <Image source={{ uri: place.imageUrl }} style={styles.image} />
+                <Text style={styles.title}>{place.name}</Text>
+                <Text style={styles.description}>{place.description}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => addToFavorites(place)}
+              >
+                <Text style={styles.buttonText}>ROTAYA EKLE</Text>
+              </TouchableOpacity>
+            </View>
           ))}
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -108,6 +128,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginBottom: 10,
     color: "#555",
+  },
+  button: {
+    backgroundColor: "#344955", // Button background color matching the tab bar
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#F7F7F7", // Button text color for readability
+    fontWeight: "bold",
   },
   bottomSpacer: {
     height: 80,

@@ -1,9 +1,9 @@
-import { View, StyleSheet, Dimensions,Image } from "react-native";
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import MapView, { Marker } from "react-native-maps";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import * as Linking from 'expo-linking';
+import { Ionicons } from '@expo/vector-icons';
+import axiosInstance from "../../axiosInstance";
 
 const mapStyle = [
   {
@@ -145,58 +145,140 @@ const mapStyle = [
 
 const MapTab = ({ route }) => {
   const mapRef = useRef(null);
+  const [places, setPlaces] = useState([]);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+
+  const userLocation = {
+    latitude: 41.43548687961983,
+    longitude: 31.754350794592725,
+  };
+
   const initialRegion = {
-    latitude: 41.4565,
-    longitude: 31.7987,
+    ...userLocation,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   };
 
-  const markerCoordinates = [
-    { latitude: 41.455712449162085, longitude: 31.786199842580277, title: "Zonguldak Limanı",markerIcon: require('../../assets/liman.png'), },
-    { latitude: 41.4475449782086, longitude: 31.8145918249371, title: "Zonguldak maden müzesi" ,markerIcon: require('../../assets/müze.png'),},
-    { latitude: 41.44076328395787, longitude: 31.833154139771036 , title: "Gökgöl mağarası",markerIcon: require('../../assets/mağara.png'), },
-    { latitude: 41.561906743741226, longitude: 32.024309313402924 , title: "Filyos Çarşısı",markerIcon: require('../../assets/çarşı.png'), },
-    { latitude: 41.573871476167, longitude: 32.03193481279399, title: "Tios antik kenti" ,markerIcon: require('../../assets/antik.png'), },
-    { latitude: 41.45266677764984, longitude: 31.98818438970079 , title: "Çakırköy mağarası",markerIcon: require('../../assets/mağara.png'), },
-    { latitude: 41.4129454559085, longitude: 31.793449747890175 , title: "Ulutan barajı",markerIcon: require('../../assets/baraj.png'), },
-    { latitude: 41.05379472948139, longitude: 31.654335795574134 , title: "Gümeli porsuk ağacı" ,markerIcon: require('../../assets/ağaç.png'),},
-    { latitude: 41.05227232173551, longitude: 31.678859394631534 , title: "Bölüklü yaylası",markerIcon: require('../../assets/yayla.png'), },
-    { latitude: 41.317708629297826, longitude: 31.451722071694032 , title: "Cehennemağzı mağaraları" ,markerIcon: require('../../assets/mağara.png'),},
-    { latitude:41.46428421566327, longitude: 31.787217982614084 , title: "Deniz feneri" ,markerIcon: require('../../assets/fener.png'),},
-    { latitude: 41.47213804942162, longitude: 31.80301024315775 , title: "Kapuz plajı" ,markerIcon: require('../../assets/plaj.png'),},
-    { latitude:41.39646333586999, longitude: 31.84593684165429 , title: "Zonguldak kent ormanı",markerIcon: require('../../assets/orman.png'), },
-    { latitude: 41.225547043113416, longitude: 31.964600830992776, title: "Bastoncular çarşısı" ,markerIcon: require('../../assets/çarşı.png'), },
-    { latitude: 41.40840258466706, longitude:31.68452254157608 , title: "Ilıksu plajı" ,markerIcon: require('../../assets/plaj.png'),},
-    { latitude: 41.465387392013234, longitude: 31.78834865377808 , title: "Varagel tüneli",markerIcon: require('../../assets/tunel.png'), },
-    { latitude: 41.42464796014042, longitude:31.818361901962916 , title: "Harmankaya şelalesi",markerIcon: require('../../assets/şelale.png'), },
-    
-    
-  ];
-  
+  useEffect(() => {
+    getAllPlaces();
+
+    async function getAllPlaces() {
+      try {
+        const response = await axiosInstance.get("/places/allPlaces");
+        const placesData = response.data.map((place) => ({
+          ...place,
+          latitude: parseFloat(place.latitude),
+          longitude: parseFloat(place.longitude),
+        }));
+        setPlaces(placesData);
+      } catch (error) {
+        console.log("Error fetching places:", error);
+      }
+    }
+
+    mapRef.current.animateToRegion({
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+
+    if (route.params?.selectedPlace) {
+      const { latitude, longitude } = route.params.selectedPlace;
+      setSelectedPlace(route.params.selectedPlace);
+      mapRef.current.animateToRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    }
+  }, [route.params?.selectedPlace]);
+
+  const handleMapPress = () => {
+    setSelectedPlace(null);
+  };
+
+  const openInGoogleMaps = (latitude, longitude) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+    Linking.openURL(url);
+  };
+
+  const goToUserLocation = () => {
+    mapRef.current.animateToRegion({
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+  };
 
   return (
     <View style={styles.container}>
       <MapView
         provider="google"
         showsUserLocation={true}
-        showsMyLocationButton={true}
-        ref={mapRef}
+        showsMyLocationButton={false}
         customMapStyle={mapStyle}
+        ref={mapRef}
         style={styles.map}
         initialRegion={initialRegion}
+        onPress={handleMapPress}
       >
-        {markerCoordinates.map((marker, index) => (
-           <Marker
-           key={index}
-           coordinate={marker}
-           title={marker.title}
-         >
-           <Image source={marker.markerIcon} style={{ width: 30, height: 30 }} />
-         </Marker>
-          
+        <Marker
+          coordinate={userLocation}
+          title="Kendi Konumum"
+          description="Burası benim manuel olarak belirlediğim konum."
+        >
+          <View style={styles.userLocationMarker}>
+            <Ionicons name="person" size={24} color="white" />
+          </View>
+        </Marker>
+        {places.length > 0 && places.map((place) => (
+          <Marker
+            key={place._id}
+            coordinate={{
+              latitude: place.latitude,
+              longitude: place.longitude,
+            }}
+            title={place.name}
+            description={place.description}
+            onPress={() => {
+              setSelectedPlace(place);
+              mapRef.current.animateToRegion({
+                latitude: place.latitude,
+                longitude: place.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              });
+            }}
+          />
         ))}
       </MapView>
+      {selectedPlace && (
+        <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setSelectedPlace(null)}
+          >
+            <Text style={styles.closeButtonText}>x</Text>
+          </TouchableOpacity>
+          <Image source={{ uri: selectedPlace.imageUrl }} style={styles.cardImage} />
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>{selectedPlace.name}</Text>
+            <Text style={styles.cardDescription}>{selectedPlace.description}</Text>
+            <TouchableOpacity
+              style={styles.googleMapsButton}
+              onPress={() => openInGoogleMaps(selectedPlace.latitude, selectedPlace.longitude)}
+            >
+              <Text style={styles.googleMapsButtonText}>Google Maps'te Aç</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      <TouchableOpacity style={styles.locationButton} onPress={goToUserLocation}>
+        <Ionicons name="locate" size={24} color="white" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -204,12 +286,92 @@ const MapTab = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   map: {
     width: Dimensions.get("window").width,
     height: Dimensions.get("window").height,
   },
+  card: {
+    position: "absolute",
+    bottom: 90, // Navigation bar'ın üstünde olacak şekilde konumlandırma
+    left: 20,
+    right: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    padding: 10,
+  },
+  cardImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: "#666",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#344955",
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  googleMapsButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#344955",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  googleMapsButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  locationButton: {
+    position: 'absolute',
+    bottom: 120,
+    right: 20,
+    backgroundColor: '#344955',
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  userLocationMarker: {
+    backgroundColor: '#344955',
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
+
 export default MapTab;
