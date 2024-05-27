@@ -118,7 +118,7 @@ const MapTab = ({ route }) => {
             }}
           >
             <Image
-              source={{ uri: place.iconUrl }}
+              source={require("../../assets/gray_marker.png")}
               style={styles.markerIcon}
               resizeMode="contain"
             />

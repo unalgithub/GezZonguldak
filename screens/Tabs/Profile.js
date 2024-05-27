@@ -97,7 +97,10 @@ export default function ProfileTab({ navigation }) {
     try {
       await AsyncStorage.removeItem("userInfo");
       await AsyncStorage.removeItem("favorites");
-      navigation.navigate("Welcome");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' }],
+      });
     } catch (error) {
       console.log("Error logging out: ", error);
     }
