@@ -1,20 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { navigationRef } from "./RootNavigation";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import WelcomeScreen from "./screens/Welcome";
 import LoginScreen from "./screens/Login";
 import SignupScreen from "./screens/Signup";
 import DetailScreen from "./screens/DetailScreen";
-
 import { View, Text, Platform } from "react-native";
 import { Entypo, FontAwesome5 } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-
 import PlacesTab from "./screens/Tabs/Places";
 import MapTab from "./screens/Tabs/Map";
 import ProfileTab from "./screens/Tabs/Profile";
@@ -56,12 +51,8 @@ export default function App() {
           options={{
             tabBarIcon: ({ focused }) => (
               <View style={{ alignItems: "center", justifyContent: "center" }}>
-                <Entypo
-                  name="home"
-                  size={24}
-                  color={focused ? "#F7F7F7" : undefined}
-                />
-                <Text style={{ fontSize: 12, color: "#F7F7F7" }}>HOME</Text>
+                <Entypo name="home" size={24} color={focused ? "#F7F7F7" : undefined} />
+                <Text style={{ fontSize: 12, color: "#F7F7F7" }}>ANASAYFA</Text>
               </View>
             ),
           }}
@@ -82,12 +73,8 @@ export default function App() {
                   backgroundColor: focused ? "#323643" : "#606470",
                 }}
               >
-                <Entypo
-                  name="map"
-                  size={24}
-                  color={focused ? "white" : undefined}
-                />
-                <Text style={{ fontSize: 12, color: "#E3FEF7" }}>Map</Text>
+                <Entypo name="map" size={24} color={focused ? "white" : undefined} />
+                <Text style={{ fontSize: 12, color: "#E3FEF7" }}>HARİTA</Text>
               </View>
             ),
           }}
@@ -98,12 +85,8 @@ export default function App() {
           options={{
             tabBarIcon: ({ focused }) => (
               <View style={{ alignItems: "center", justifyContent: "center" }}>
-                <FontAwesome5
-                  name="user"
-                  size={24}
-                  color={focused ? "white" : undefined}
-                />
-                <Text style={{ fontSize: 12, color: "#E3FEF7" }}>PROFILE</Text>
+                <FontAwesome5 name="route" size={24} color={focused ? "white" : undefined} />
+                <Text style={{ fontSize: 12, color: "#E3FEF7" }}>ROTA</Text>
               </View>
             ),
           }}
@@ -117,44 +100,16 @@ export default function App() {
       <Stack.Navigator initialRouteName="Welcome">
         {userInfo ? (
           <>
-            <Stack.Screen
-              name="Home"
-              component={MainTabNavigator}
-              options={{ headerShown: false }}
-            />
-
-            <Stack.Screen
-              name="Detail"
-              component={DetailScreen}
-              options={{ headerShown: true }}
-            />
+            <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />
+            <Stack.Screen name="Detail" component={DetailScreen} options={{ headerShown: true }} />
           </>
         ) : (
           <>
-            <Stack.Screen
-              name="Welcome"
-              component={WelcomeScreen}
-              options={{ headerShown: false }}
-            />
-
-            <Stack.Screen
-              name="Signup"
-              component={SignupScreen}
-              options={{ headerShown: false }}
-            />
-
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ headerShown: false }}
-            />
-
-            <Stack.Screen
-              name="Home"
-              component={MainTabNavigator}
-              options={{ headerShown: false }}
-            />
-            
+            <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />
+            <Stack.Screen name="Detail" component={DetailScreen} options={{ headerShown: true }} />
           </>
         )}
       </Stack.Navigator>

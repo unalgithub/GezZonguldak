@@ -6,17 +6,48 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const DetailScreen = ({ route }) => {
   const { place } = route.params;
   const navigation = useNavigation();
 
-  const handleNavigateToMap = () => {
+  const handleNavigateToMap = async () => {
+    try {
+      const shownPlaces = await AsyncStorage.getItem("shownPlaces");
+      const shownPlacesArray = shownPlaces ? JSON.parse(shownPlaces) : [];
+      if (!shownPlacesArray.includes(place._id)) {
+        shownPlacesArray.push(place._id);
+        await AsyncStorage.setItem("shownPlaces", JSON.stringify(shownPlacesArray));
+      }
+    } catch (error) {
+      console.log("Error saving shown place: ", error);
+    }
     navigation.navigate('Map', {
       selectedPlace: place
     });
+  };
+
+  const addToFavorites = async () => {
+    try {
+      const favorites = await AsyncStorage.getItem("favorites");
+      const favoritesArray = favorites ? JSON.parse(favorites) : [];
+      const isAlreadyFavorite = favoritesArray.some((fav) => fav._id === place._id);
+
+      if (!isAlreadyFavorite) {
+        favoritesArray.push(place);
+        await AsyncStorage.setItem("favorites", JSON.stringify(favoritesArray));
+        Alert.alert("Başarılı", "Rotaya Eklendi");
+      } else {
+        Alert.alert("Bilgi", "Rota Kısmında zaten mevcut.");
+      }
+    } catch (error) {
+      console.log("Error adding to favorites: ", error);
+      Alert.alert("Hata", "Rota eklenirken bir hata oluştu.");
+    }
   };
 
   return (
@@ -48,7 +79,7 @@ const DetailScreen = ({ route }) => {
       <TouchableOpacity style={styles.routeButton} onPress={handleNavigateToMap}>
         <Text style={styles.routeButtonText}>Haritada Göster</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity style={styles.addButton} onPress={addToFavorites}>
         <Text style={styles.addButtonText}>Rotaya Ekle</Text>
       </TouchableOpacity>
     </View>

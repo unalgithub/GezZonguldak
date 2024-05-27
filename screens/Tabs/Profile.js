@@ -1,10 +1,15 @@
-import { View, Text, ScrollView, Image, StyleSheet, Button } from "react-native";
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 
 export default function ProfileTab({ navigation }) {
   const [userInfo, setUserInfo] = useState(null);
   const [favorites, setFavorites] = useState([]);
+  const [shownPlaces, setShownPlaces] = useState([]);
+  const [logoutIconColor, setLogoutIconColor] = useState("black");
+
   const userLocation = {
     latitude: 41.43548687961983,
     longitude: 31.754350794592725,
@@ -27,8 +32,14 @@ export default function ProfileTab({ navigation }) {
       setFavorites(sortedFavorites);
     }
 
+    async function getShownPlaces() {
+      const shownPlaces = await AsyncStorage.getItem("shownPlaces");
+      setShownPlaces(shownPlaces ? JSON.parse(shownPlaces) : []);
+    }
+
     getUserInfo();
     getFavorites();
+    getShownPlaces();
   }, []);
 
   useEffect(() => {
@@ -43,7 +54,14 @@ export default function ProfileTab({ navigation }) {
         });
         setFavorites(sortedFavorites);
       }
+
+      async function getShownPlaces() {
+        const shownPlaces = await AsyncStorage.getItem("shownPlaces");
+        setShownPlaces(shownPlaces ? JSON.parse(shownPlaces) : []);
+      }
+
       getFavorites();
+      getShownPlaces();
     });
 
     return unsubscribe;
@@ -75,41 +93,89 @@ export default function ProfileTab({ navigation }) {
     return R * 2 * Math.asin(Math.sqrt(a));
   };
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("userInfo");
+      await AsyncStorage.removeItem("favorites");
+      navigation.navigate("Welcome");
+    } catch (error) {
+      console.log("Error logging out: ", error);
+    }
+  };
+
+  const createGoogleMapsRoute = () => {
+    const baseUrl = "https://www.google.com/maps/dir/?api=1";
+    const origin = `&origin=${userLocation.latitude},${userLocation.longitude}`;
+    const destination = `&destination=${favorites[favorites.length - 1].latitude},${favorites[favorites.length - 1].longitude}`;
+    const waypoints = favorites.slice(0, -1).map(place => `${place.latitude},${place.longitude}`).join('|');
+    const waypointsParam = waypoints ? `&waypoints=${waypoints}` : '';
+    const travelMode = "&travelmode=driving";
+    const url = `${baseUrl}${origin}${destination}${waypointsParam}${travelMode}`;
+
+    Linking.openURL(url);
+  };
+
+  const handleLogoutPressIn = () => {
+    setLogoutIconColor("white");
+  };
+
+  const handleLogoutPressOut = () => {
+    setLogoutIconColor("black");
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Profile Bilgileri</Text>
-      <Text>Kullanıcı Email : {userInfo?.email}</Text>
-      <Text>Kullanıcı Şifre : {userInfo?.password}</Text>
-
-      <Button
-        title="Çıkış Yap"
-        onPress={async () => {
-          await AsyncStorage.removeItem("userInfo");
-          navigation.navigate("Welcome");
-        }}
-        filled
-        style={{
-          marginTop: 18,
-          marginBottom: 4,
-        }}
-      />
-
-      <Text style={styles.header}>Favori Yerler</Text>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>            ROTALAR</Text>
+        <TouchableOpacity 
+          style={styles.logoutButton} 
+          onPress={handleLogout}
+          onPressIn={handleLogoutPressIn}
+          onPressOut={handleLogoutPressOut}
+        >
+          <Ionicons name="exit" size={24} color={logoutIconColor} />
+          <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+        </TouchableOpacity>
+      </View>
+      {favorites.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Henüz favorilere eklenmiş bir yer yok.</Text>
+        </View>
+      )}
+      {favorites.length > 0 && (
+        <>
+          <Text style={styles.infoText}>
+            Gezilecek yerler, konumunuza yakınlığa göre sıralanmıştır.
+          </Text>
+          <TouchableOpacity style={styles.routeButton} onPress={createGoogleMapsRoute}>
+            <Text style={styles.routeButtonText}>Google Maps'te Rota Oluştur</Text>
+          </TouchableOpacity>
+        </>
+      )}
+      <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         {favorites?.length > 0 &&
           favorites?.map((place, index) => {
             const distance = getDistance(userLocation, { latitude: place.latitude, longitude: place.longitude });
+            const isShown = shownPlaces.includes(place._id);
             return (
-              <View key={index} style={styles.card}>
+              <TouchableOpacity
+                key={index}
+                style={styles.card}
+                onPress={() => navigation.navigate("Detail", { place })}
+              >
                 <Image source={{ uri: place.imageUrl }} style={styles.image} />
+                {isShown && <View style={styles.shownBadge}><Text style={styles.shownBadgeText}>ROTA OLUŞTURULDU</Text></View>}
+                <Text style={styles.distanceBadge}>{distance.toFixed(2)} km</Text>
                 <Text style={styles.title}>{place.name}</Text>
                 <Text style={styles.distance}>Uzaklık: {distance.toFixed(2)} km</Text>
                 <Text style={styles.description}>{place.description}</Text>
-                <Button
-                  title="Favorilerden Kaldır"
+                <TouchableOpacity
+                  style={styles.removeButton}
                   onPress={() => removeFromFavorites(place._id)}
-                />
-              </View>
+                >
+                  <Text style={styles.removeButtonText}>Rotadan Kaldır</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
             );
           })}
         <View style={styles.bottomSpacer} />
@@ -121,17 +187,53 @@ export default function ProfileTab({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     padding: 20,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
   header: {
+    marginTop: 20,
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    textAlign: 'center',
+    flex: 1,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: "#344955",
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  logoutButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 5,
+  },
+  infoText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+    textAlign: 'center',
   },
   scrollViewContent: {
     paddingBottom: 80,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: 'center',
   },
   card: {
     margin: 10,
@@ -143,12 +245,33 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
-    width: "100%",
   },
   image: {
     width: "100%",
     height: 200,
     backgroundColor: "gray",
+  },
+  distanceBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: '#344955',
+    padding: 5,
+    borderRadius: 5,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  shownBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'green',
+    padding: 5,
+    borderRadius: 5,
+  },
+  shownBadgeText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   title: {
     fontSize: 20,
@@ -169,9 +292,27 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#555",
   },
+  removeButton: {
+    backgroundColor: "#344955",
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  removeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
   bottomSpacer: {
     height: 50,
   },
+  routeButton: {
+    backgroundColor: "#344955",
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 5,
+    marginVertical: 10,
+  },
+  routeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
 });
-
-
