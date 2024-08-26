@@ -1,2 +1,2 @@
-# GezZonguldak-Mobile
-#created from Göktuğ Külah
+#GezZonguldak-Mobile
+#created from Ünal Çot
